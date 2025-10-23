@@ -3,55 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>কুইজ গেম | চূড়ান্ত সংস্করণ</title>
-    <!-- Tailwind CSS CDN -->
+    <title>বাংলা কুইজ চ্যালেঞ্জ</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- HTML এনটিটি ডিকোড করার জন্য 'he' লাইব্রেরি -->
-    <script src="https://cdn.jsdelivr.net/npm/he@1.2.0/he.min.js"></script>
+    <!-- he.js লাইব্রেরির আর প্রয়োজন নেই, কারণ আমরা API ব্যবহার করছি না -->
 </head>
 <body class="bg-slate-900 text-white flex items-center justify-center min-h-screen font-sans">
 
     <div class="w-full max-w-2xl mx-auto p-8 rounded-xl shadow-lg bg-slate-800">
-        
         <div id="quiz-container">
             <!-- প্রাথমিক স্ক্রিন -->
             <div id="start-screen" class="text-center">
-                <h1 class="text-4xl font-bold mb-4 text-cyan-400">চূড়ান্ত কুইজ চ্যালেঞ্জ</h1>
+                <h1 class="text-4xl font-bold mb-4 text-cyan-400">বাংলা কুইজ চ্যালেঞ্জ</h1>
                 <p class="text-slate-300 mb-8">আপনি কি এই চ্যালেঞ্জের জন্য প্রস্তুত?</p>
                 <p id="start-screen-highscore" class="text-lg text-yellow-400 mb-8">সর্বোচ্চ স্কোর: ০</p>
                 
-                <!-- লোডিং বার্তা এবং স্টার্ট বাটন কন্টেইনার -->
-                <div id="start-button-container">
-                    <button id="start-btn" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105">
-                        চ্যালেঞ্জ শুরু করুন
-                    </button>
-                </div>
-                <p id="loading-message" class="hidden text-lg text-cyan-300 mt-4">প্রশ্ন লোড হচ্ছে...</p>
+                <button id="start-btn" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105">
+                    চ্যালেঞ্জ শুরু করুন
+                </button>
             </div>
 
-            <!-- প্রশ্ন দেখানোর স্ক্রিন -->
+            <!-- প্রশ্ন দেখানোর স্ক্রিন (আগের মতোই ) -->
             <div id="question-screen" class="hidden">
-                <!-- প্রোগ্রেস বার -->
+                <!-- ... (বাকি অংশ অপরিবর্তিত) ... -->
                 <div class="w-full bg-slate-700 rounded-full h-2.5 mb-6">
                     <div id="progress-bar" class="bg-cyan-500 h-2.5 rounded-full" style="width: 0%; transition: width 0.5s ease-in-out;"></div>
                 </div>
-
                 <div id="header" class="flex justify-between items-center mb-6">
                     <p id="question-counter" class="text-lg font-semibold">প্রশ্ন ১ / ১০</p>
-                    <!-- টাইমার -->
-                    <div id="timer" class="flex items-center justify-center w-12 h-12 rounded-full border-4 border-yellow-400 text-xl font-bold">
-                        ১০
-                    </div>
+                    <div id="timer" class="flex items-center justify-center w-12 h-12 rounded-full border-4 border-yellow-400 text-xl font-bold">১০</div>
                     <p id="score" class="text-lg font-semibold bg-green-500 px-3 py-1 rounded-md">স্কোর: ০</p>
                 </div>
-                
-                <h2 id="question-text" class="text-2xl font-bold mb-6 min-h-[70px]">প্রশ্ন এখানে লোড হবে...</h2>
+                <h2 id="question-text" class="text-2xl font-bold mb-6 min-h-[70px]">প্রশ্ন...</h2>
                 <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                 <div id="feedback" class="mt-6 text-center text-xl font-bold h-8"></div>
             </div>
 
-            <!-- ফাইনাল রেজাল্ট স্ক্রিন -->
+            <!-- ফাইনাল রেজাল্ট স্ক্রিন (আগের মতোই) -->
             <div id="result-screen" class="hidden text-center">
+                <!-- ... (অপরিবর্তিত) ... -->
                 <h2 class="text-4xl font-bold mb-4 text-cyan-400">🎉 চ্যালেঞ্জ সম্পন্ন! 🎉</h2>
                 <p id="final-score" class="text-2xl mb-6">আপনার চূড়ান্ত স্কোর: ০ / ১০</p>
                 <p id="result-screen-highscore" class="text-xl mb-8 text-yellow-400">সর্বোচ্চ স্কোর: ০</p>
@@ -61,7 +50,6 @@
             </div>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
