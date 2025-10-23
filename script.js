@@ -1,4 +1,4 @@
-// DOM এলিমেন্টগুলো সিলেক্ট করা
+// DOM এলিমেন্টগুলো
 const startScreen = document.getElementById('start-screen');
 const questionScreen = document.getElementById('question-screen');
 const resultScreen = document.getElementById('result-screen');
@@ -12,56 +12,90 @@ const feedback = document.getElementById('feedback');
 const finalScore = document.getElementById('final-score');
 const progressBar = document.getElementById('progress-bar');
 const timerDisplay = document.getElementById('timer');
+const startScreenHighScore = document.getElementById('start-screen-highscore');
+const resultScreenHighScore = document.getElementById('result-screen-highscore');
+const startButtonContainer = document.getElementById('start-button-container');
+const loadingMessage = document.getElementById('loading-message');
 
-// ✨ নতুন: সাউন্ড ইফেক্ট
+// সাউন্ড ইফেক্ট
 const correctSound = new Audio('correct.mp3');
 const wrongSound = new Audio('wrong.mp3');
 
-// ✨ নতুন: আরও প্রশ্ন যোগ করা
-const questions = [
-  { q: "HTML এর পূর্ণরূপ কী?", options: ["Hyper Text Markup Language", "High Tech Modern Language", "Hyperlink and Text Language"], answer: "Hyper Text Markup Language" },
-  { q: "কোন CSS ফ্রেমওয়ার্কটি 'Utility-First' নীতির উপর ভিত্তি করে তৈরি?", options: ["Bootstrap", "Tailwind CSS", "Foundation"], answer: "Tailwind CSS" },
-  { q: "JavaScript এ একটি ভ্যারিয়েবল ডিক্লেয়ার করার জন্য কোন কীওয়ার্ডটি এখন আর ব্যবহার করা উচিত নয়?", options: ["let", "const", "var"], answer: "var" },
-  { q: "কোন ট্যাগটি ব্যবহার করে একটি এক্সটার্নাল JavaScript ফাইল যুক্ত করা হয়?", options: ["<script>", "<js>", "<link>"], answer: "<script>" },
-  { q: "CSS এর 'Cascading' বলতে কী বোঝায়?", options: ["স্টাইল ওপর থেকে নিচে প্রবাহিত হয়", "এটি একটি অ্যানিমেশন", "এটি একটি ফ্রেমওয়ার্ক"], answer: "স্টাইল ওপর থেকে নিচে প্রবাহিত হয়" },
-  { q: "JavaScript এর `===` অপারেটর কী চেক করে?", options: ["শুধুমাত্র মান", "মান এবং টাইপ উভয়ই", "শুধুমাত্র টাইপ"], answer: "মান এবং টাইপ উভয়ই" },
-  { q: "একটি ওয়েবসাইটে Favicon কী?", options: ["একটি বিশেষ ফন্ট", "ব্রাউজার ট্যাবের ছোট আইকন", "একটি জাভাস্ক্রিপ্ট লাইব্রেরি"], answer: "ব্রাউজার ট্যাবের ছোট আইকন" },
-  { q: "API এর পূর্ণরূপ কী?", options: ["Application Programming Interface", "Advanced Programming Input", "Application Process Integration"], answer: "Application Programming Interface" }
-];
-
+// ভ্যারিয়েবল
+let questions = [];
 let currentQuestionIndex = 0;
 let score = 0;
-let timer; // ✨ নতুন: টাইমার ভ্যারিয়েবল
-let timeLeft = 10; // প্রতিটি প্রশ্নের জন্য ১০ সেকেন্ড সময়
+let timer;
+let timeLeft = 10;
+let highScore = localStorage.getItem('quizHighScore') || 0;
+
+// API থেকে প্রশ্ন আনার ফাংশন
+async function fetchQuestions() {
+    startButtonContainer.classList.add('hidden');
+    loadingMessage.classList.remove('hidden');
+    try {
+        const response = await fetch('https://opentdb.com/api.php?amount=10&category=18&type=multiple' ); // category=18 মানে কম্পিউটার সায়েন্স
+        const data = await response.json();
+        questions = data.results.map(apiQuestion => {
+            const formattedQuestion = {
+                q: he.decode(apiQuestion.question),
+                options: [...apiQuestion.incorrect_answers.map(a => he.decode(a)), he.decode(apiQuestion.correct_answer)],
+                answer: he.decode(apiQuestion.correct_answer)
+            };
+            formattedQuestion.options.sort(() => Math.random() - 0.5);
+            return formattedQuestion;
+        });
+        startButtonContainer.classList.remove('hidden');
+        loadingMessage.classList.add('hidden');
+    } catch (error) {
+        loadingMessage.innerText = "প্রশ্ন লোড করা যায়নি। ইন্টারনেট সংযোগ পরীক্ষা করুন।";
+        console.error("Failed to fetch questions:", error);
+    }
+}
+
+// হাই-স্কোর দেখানো
+function displayHighScore() {
+    startScreenHighScore.innerText = `সর্বোচ্চ স্কোর: ${highScore}`;
+    resultScreenHighScore.innerText = `সর্বোচ্চ স্কোর: ${highScore}`;
+}
 
 // ইভেন্ট লিসেনার
 startBtn.addEventListener('click', startQuiz);
 restartBtn.addEventListener('click', restartQuiz);
 
+window.onload = () => {
+    displayHighScore();
+    fetchQuestions();
+};
+
 function startQuiz() {
+    if (questions.length === 0) {
+        alert("প্রশ্ন এখনো লোড হয়নি। অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন।");
+        return;
+    }
     startScreen.classList.add('hidden');
-    resultScreen.classList.add('hidden');
     questionScreen.classList.remove('hidden');
-    
     currentQuestionIndex = 0;
     score = 0;
-    
     showQuestion();
+}
+
+function restartQuiz() {
+    displayHighScore();
+    fetchQuestions();
+    startScreen.classList.remove('hidden');
+    resultScreen.classList.add('hidden');
+    questionScreen.classList.add('hidden');
 }
 
 function showQuestion() {
     resetState();
-    
-    // ✨ নতুন: প্রোগ্রেস বার আপডেট করা
     const progressPercentage = (currentQuestionIndex / questions.length) * 100;
     progressBar.style.width = `${progressPercentage}%`;
-
     const currentQuestion = questions[currentQuestionIndex];
-    
     questionCounter.innerText = `প্রশ্ন ${currentQuestionIndex + 1} / ${questions.length}`;
     scoreDisplay.innerText = `স্কোর: ${score}`;
     questionText.innerText = currentQuestion.q;
-
     currentQuestion.options.forEach(option => {
         const button = document.createElement('button');
         button.innerText = option;
@@ -69,36 +103,33 @@ function showQuestion() {
         button.addEventListener('click', () => selectAnswer(option, button));
         optionsContainer.appendChild(button);
     });
-
-    // ✨ নতুন: টাইমার শুরু করা
     timeLeft = 10;
     timerDisplay.innerText = timeLeft;
-    timerDisplay.classList.remove('border-red-500'); // টাইমারের বর্ডার স্বাভাবিক করা
+    timerDisplay.classList.remove('border-red-500');
     timerDisplay.classList.add('border-yellow-400');
     startTimer();
 }
 
-// ✨ নতুন: টাইমার ফাংশন
 function startTimer() {
     timer = setInterval(() => {
         timeLeft--;
         timerDisplay.innerText = timeLeft;
         if (timeLeft <= 3) {
             timerDisplay.classList.remove('border-yellow-400');
-            timerDisplay.classList.add('border-red-500'); // সময় শেষ হওয়ার কাছাকাছি এলে বর্ডার লাল হবে
+            timerDisplay.classList.add('border-red-500');
         }
         if (timeLeft === 0) {
             clearInterval(timer);
             feedback.innerText = "⏰ সময় শেষ!";
             feedback.classList.add('text-yellow-400');
-            disableOptionsAndShowCorrectAnswer(); // সময় শেষ হলে সঠিক উত্তর দেখিয়ে দেবে
-            setTimeout(goToNextQuestion, 2000); // ২ সেকেন্ড পর পরের প্রশ্নে যাবে
+            disableOptionsAndShowCorrectAnswer();
+            setTimeout(goToNextQuestion, 2000);
         }
     }, 1000);
 }
 
 function resetState() {
-    clearInterval(timer); // নতুন প্রশ্ন আসার আগে পুরোনো টাইমার বন্ধ করা
+    clearInterval(timer);
     feedback.innerText = '';
     feedback.classList.remove('text-green-400', 'text-red-400', 'text-yellow-400');
     while (optionsContainer.firstChild) {
@@ -107,35 +138,30 @@ function resetState() {
 }
 
 function selectAnswer(selectedOption, button) {
-    clearInterval(timer); // উত্তর দেওয়ার সাথে সাথে টাইমার বন্ধ
-    const correct = questions[currentQuestionIndex].answer;
-
+    clearInterval(timer);
     disableOptionsAndShowCorrectAnswer();
-
+    const correct = questions[currentQuestionIndex].answer;
     if (selectedOption === correct) {
         score++;
         feedback.innerText = "✅ সঠিক উত্তর!";
         feedback.classList.add('text-green-400');
         button.classList.remove('bg-slate-700');
         button.classList.add('bg-green-500');
-        correctSound.play(); // ✨ নতুন: সঠিক উত্তরের সাউন্ড
+        correctSound.play();
     } else {
         feedback.innerText = "❌ ভুল উত্তর!";
         feedback.classList.add('text-red-400');
         button.classList.remove('bg-slate-700');
         button.classList.add('bg-red-500');
-        wrongSound.play(); // ✨ নতুন: ভুল উত্তরের সাউন্ড
+        wrongSound.play();
     }
-    
     scoreDisplay.innerText = `স্কোর: ${score}`;
-    setTimeout(goToNextQuestion, 2000); // ২ সেকেন্ড পর পরের প্রশ্নে যাবে
+    setTimeout(goToNextQuestion, 2000);
 }
 
-// ✨ নতুন: অপশন ডিজেবল এবং সঠিক উত্তর দেখানোর জন্য একটি আলাদা ফাংশন
 function disableOptionsAndShowCorrectAnswer() {
     const correct = questions[currentQuestionIndex].answer;
     const allButtons = optionsContainer.children;
-
     Array.from(allButtons).forEach(btn => {
         btn.disabled = true;
         if (btn.innerText === correct) {
@@ -145,7 +171,6 @@ function disableOptionsAndShowCorrectAnswer() {
     });
 }
 
-// ✨ নতুন: পরের প্রশ্নে যাওয়ার জন্য একটি ফাংশন
 function goToNextQuestion() {
     currentQuestionIndex++;
     if (currentQuestionIndex < questions.length) {
@@ -158,14 +183,13 @@ function goToNextQuestion() {
 function showResult() {
     questionScreen.classList.add('hidden');
     resultScreen.classList.remove('hidden');
-    
-    // ফাইনাল প্রোগ্রেস বার ১০০% করা
     progressBar.style.width = '100%';
-    
     finalScore.innerText = `আপনার চূড়ান্ত স্কোর: ${score} / ${questions.length}`;
-}
-
-function restartQuiz() {
-    startScreen.classList.remove('hidden');
-    resultScreen.classList.add('hidden');
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('quizHighScore', highScore);
+        resultScreenHighScore.innerText = `🎉 নতুন সর্বোচ্চ স্কোর: ${highScore}`;
+    } else {
+        resultScreenHighScore.innerText = `সর্বোচ্চ স্কোর: ${highScore}`;
+    }
 }
